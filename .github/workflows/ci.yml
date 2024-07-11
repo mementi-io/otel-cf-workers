@@ -1,34 +1,32 @@
-name: Main branch
+name: CI
 
-# This flow will re-run tests on the main branch after a PR has been merged.
-
-on:
-  push:
-    branches:
-      - main
+on: [push]
 
 jobs:
-  test:
-    name: 'Tests'
+  check:
+    name: 'Check'
     timeout-minutes: 30
     runs-on: ubuntu-latest
     concurrency:
-      group: ${{ github.workflow }}-${{ github.ref }}
+      group: ${{ github.workflow }}-${{ github.ref }}-checks
       cancel-in-progress: true
-    if: github.repository_owner == 'evanderkoogh'
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
       - uses: pnpm/action-setup@v3
         with:
-          version: 8
+          version: 9
+
       - name: Use Node.js 20
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version-file: '.nvmrc'
           cache: 'pnpm'
+
       - name: 'Install NPM Dependencies'
         run: 'pnpm install --frozen-lockfile --child-concurrency=10'
+
       - name: 'Check for Errors'
         run: 'pnpm check'
