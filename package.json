@@ -43,7 +43,7 @@
   "dependencies": {
     "@opentelemetry/api": "~1.8.0",
     "@opentelemetry/core": "^1.25.1",
-    "@opentelemetry/exporter-trace-otlp-http": "^0.51.1",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.52.1",
     "@opentelemetry/otlp-exporter-base": "^0.51.1",
     "@opentelemetry/otlp-transformer": "0.51.1",
     "@opentelemetry/resources": "^1.25.1",
