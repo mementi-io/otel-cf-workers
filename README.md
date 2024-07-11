@@ -16,7 +16,7 @@ compatibility_flags = [ "nodejs_compat" ]
 
 ```typescript
 import { trace } from '@opentelemetry/api'
-import { instrument, ResolveConfigFn } from '@mementi/otel-cf-workers'
+import { instrument, ResolveConfigFn } from '@mementi-io/otel-cf-workers'
 
 export interface Env {
     HONEYCOMB_API_KEY: string
@@ -63,7 +63,7 @@ Instrumenting Durable Objects work very similar to the regular Worker auto-instr
 handler in an `instrument` call, you wrap the Durable Object class with the `instrumentDO` function.
 
 ```typescript
-import { instrumentDO, PartialTraceConfig } from '@mementi/otel-cf-workers'
+import { instrumentDO, PartialTraceConfig } from '@mementi-io/otel-cf-workers'
 
 const config: ResolveConfigFn = (env: Env, _trigger) => {
     return {
