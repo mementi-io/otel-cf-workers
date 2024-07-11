@@ -57,7 +57,7 @@ const createResource = (config: ResolvedTraceConfig): Resource => {
         'cloud.region': 'earth',
         'faas.max_memory': 134217728,
         'telemetry.sdk.language': 'js',
-        'telemetry.sdk.name': '@mementi/otel-cf-workers',
+        'telemetry.sdk.name': '@mementi-io/otel-cf-workers',
         'telemetry.sdk.version': '1.0.1-rc.X',
     };
     const serviceResource = new Resource(config.resource);

@@ -30,7 +30,7 @@ jobs:
           node-version-file: '.nvmrc'
           cache: 'pnpm'
           registry-url: 'https://npm.pkg.github.com'
-          scope: '@mementi'
+          scope: '@mementi-io'
 
       - name: 'Install NPM Dependencies'
         run: 'pnpm install --frozen-lockfile'
