@@ -1,97 +1,98 @@
 import {
-	Tracer,
-	TraceFlags,
-	Span,
-	SpanKind,
-	SpanOptions,
-	Context,
-	context as api_context,
-	trace,
-} from '@opentelemetry/api'
-import { sanitizeAttributes } from '@opentelemetry/core'
-import { Resource } from '@opentelemetry/resources'
-import { SpanProcessor, RandomIdGenerator, ReadableSpan, SamplingDecision } from '@opentelemetry/sdk-trace-base'
+    Context,
+    context as api_context,
+    Span,
+    SpanKind,
+    SpanOptions,
+    trace,
+    TraceFlags,
+    Tracer,
+} from '@opentelemetry/api';
+import { sanitizeAttributes } from '@opentelemetry/core';
+import { Resource } from '@opentelemetry/resources';
+import { RandomIdGenerator, ReadableSpan, SamplingDecision, SpanProcessor } from '@opentelemetry/sdk-trace-base';
 
-import { SpanImpl } from './span.js'
-import { getActiveConfig } from './config.js'
+import { SpanImpl } from './span.js';
+import { getActiveConfig } from './config.js';
 
 export class WorkerTracer implements Tracer {
-	private readonly _spanProcessors: SpanProcessor[]
-	private readonly resource: Resource
-	private readonly idGenerator: RandomIdGenerator = new RandomIdGenerator()
-	constructor(spanProcessors: SpanProcessor[], resource: Resource) {
-		this._spanProcessors = spanProcessors
-		this.resource = resource
-	}
+    private readonly _spanProcessors: SpanProcessor[];
+    private readonly resource: Resource;
+    private readonly idGenerator: RandomIdGenerator = new RandomIdGenerator();
 
-	get spanProcessors() {
-		return this._spanProcessors
-	}
+    constructor(spanProcessors: SpanProcessor[], resource: Resource) {
+        this._spanProcessors = spanProcessors;
+        this.resource = resource;
+    }
 
-	addToResource(extra: Resource) {
-		this.resource.merge(extra)
-	}
+    get spanProcessors() {
+        return this._spanProcessors;
+    }
 
-	startSpan(name: string, options: SpanOptions = {}, context = api_context.active()): Span {
-		if (options.root) {
-			context = trace.deleteSpan(context)
-		}
-		const parentSpan = trace.getSpan(context)
-		const parentSpanContext = parentSpan?.spanContext()
-		const hasParentContext = parentSpanContext && trace.isSpanContextValid(parentSpanContext)
+    addToResource(extra: Resource) {
+        this.resource.merge(extra);
+    }
 
-		const traceId = hasParentContext ? parentSpanContext.traceId : this.idGenerator.generateTraceId()
-		const spanKind = options.kind || SpanKind.INTERNAL
-		const sanitisedAttrs = sanitizeAttributes(options.attributes)
+    startSpan(name: string, options: SpanOptions = {}, context = api_context.active()): Span {
+        if (options.root) {
+            context = trace.deleteSpan(context);
+        }
+        const parentSpan = trace.getSpan(context);
+        const parentSpanContext = parentSpan?.spanContext();
+        const hasParentContext = parentSpanContext && trace.isSpanContextValid(parentSpanContext);
 
-		const sampler = getActiveConfig().sampling.headSampler
-		const samplingDecision = sampler.shouldSample(context, traceId, name, spanKind, sanitisedAttrs, [])
-		const { decision, traceState, attributes: attrs } = samplingDecision
-		const attributes = Object.assign({}, sanitisedAttrs, attrs)
+        const traceId = hasParentContext ? parentSpanContext.traceId : this.idGenerator.generateTraceId();
+        const spanKind = options.kind || SpanKind.INTERNAL;
+        const sanitisedAttrs = sanitizeAttributes(options.attributes);
 
-		const spanId = this.idGenerator.generateSpanId()
-		const parentSpanId = hasParentContext ? parentSpanContext.spanId : undefined
-		const traceFlags = decision === SamplingDecision.RECORD_AND_SAMPLED ? TraceFlags.SAMPLED : TraceFlags.NONE
-		const spanContext = { traceId, spanId, traceFlags, traceState }
+        const sampler = getActiveConfig().sampling.headSampler;
+        const samplingDecision = sampler.shouldSample(context, traceId, name, spanKind, sanitisedAttrs, []);
+        const { decision, traceState, attributes: attrs } = samplingDecision;
+        const attributes = Object.assign({}, sanitisedAttrs, attrs);
 
-		const span = new SpanImpl({
-			attributes,
-			name,
-			onEnd: (span) => {
-				this.spanProcessors.forEach((sp) => {
-					sp.onEnd(span as unknown as ReadableSpan)
-				})
-			},
-			resource: this.resource,
-			spanContext,
-			parentSpanId,
-			spanKind,
-			startTime: options.startTime,
-		})
-		this.spanProcessors.forEach((sp) => {
-			//Do not get me started on the idosyncracies of the Otel JS libraries.
-			//@ts-ignore
-			sp.onStart(span, context)
-		})
-		return span
-	}
+        const spanId = this.idGenerator.generateSpanId();
+        const parentSpanId = hasParentContext ? parentSpanContext.spanId : undefined;
+        const traceFlags = decision === SamplingDecision.RECORD_AND_SAMPLED ? TraceFlags.SAMPLED : TraceFlags.NONE;
+        const spanContext = { traceId, spanId, traceFlags, traceState };
 
-	startActiveSpan<F extends (span: Span) => ReturnType<F>>(name: string, fn: F): ReturnType<F>
-	startActiveSpan<F extends (span: Span) => ReturnType<F>>(name: string, options: SpanOptions, fn: F): ReturnType<F>
-	startActiveSpan<F extends (span: Span) => ReturnType<F>>(
-		name: string,
-		options: SpanOptions,
-		context: Context,
-		fn: F,
-	): ReturnType<F>
-	startActiveSpan<F extends (span: Span) => ReturnType<F>>(name: string, ...args: unknown[]): ReturnType<F> {
-		const options = args.length > 1 ? (args[0] as SpanOptions) : undefined
-		const parentContext = args.length > 2 ? (args[1] as Context) : api_context.active()
-		const fn = args[args.length - 1] as F
+        const span = new SpanImpl({
+            attributes,
+            name,
+            onEnd: (span) => {
+                this.spanProcessors.forEach((sp) => {
+                    sp.onEnd(span as unknown as ReadableSpan);
+                });
+            },
+            resource: this.resource,
+            spanContext,
+            parentSpanId,
+            spanKind,
+            startTime: options.startTime,
+        });
+        this.spanProcessors.forEach((sp) => {
+            // Do not get me started on the idosyncracies of the Otel JS libraries.
+            // @ts-ignore
+            sp.onStart(span, context);
+        });
+        return span;
+    }
 
-		const span = this.startSpan(name, options, parentContext)
-		const contextWithSpanSet = trace.setSpan(parentContext, span)
+    startActiveSpan<F extends (span: Span) => ReturnType<F>>(name: string, fn: F): ReturnType<F>;
+    startActiveSpan<F extends (span: Span) => ReturnType<F>>(name: string, options: SpanOptions, fn: F): ReturnType<F>;
+    startActiveSpan<F extends (span: Span) => ReturnType<F>>(
+        name: string,
+        options: SpanOptions,
+        context: Context,
+        fn: F,
+    ): ReturnType<F>;
+    startActiveSpan<F extends (span: Span) => ReturnType<F>>(name: string, ...args: unknown[]): ReturnType<F> {
+        const options = args.length > 1 ? (args[0] as SpanOptions) : undefined;
+        const parentContext = args.length > 2 ? (args[1] as Context) : api_context.active();
+        const fn = args[args.length - 1] as F;
 
-		return api_context.with(contextWithSpanSet, fn, undefined, span)
-	}
+        const span = this.startSpan(name, options, parentContext);
+        const contextWithSpanSet = trace.setSpan(parentContext, span);
+
+        return api_context.with(contextWithSpanSet, fn, undefined, span);
+    }
 }
