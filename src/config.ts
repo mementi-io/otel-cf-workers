@@ -1,15 +1,15 @@
-import { context } from '@opentelemetry/api'
-import { ResolvedTraceConfig, Trigger } from './types.js'
+import { context } from '@opentelemetry/api';
+import { ResolvedTraceConfig, Trigger } from './types.js';
 
-const configSymbol = Symbol('Otel Workers Tracing Configuration')
+const configSymbol = Symbol('Otel Workers Tracing Configuration');
 
-export type Initialiser = (env: Record<string, unknown>, trigger: Trigger) => ResolvedTraceConfig
+export type Initialiser = (env: Record<string, unknown>, trigger: Trigger) => ResolvedTraceConfig;
 
 export function setConfig(config: ResolvedTraceConfig, ctx = context.active()) {
-	return ctx.setValue(configSymbol, config)
+    return ctx.setValue(configSymbol, config);
 }
 
 export function getActiveConfig(): ResolvedTraceConfig {
-	const config = context.active().getValue(configSymbol) as ResolvedTraceConfig
-	return config
+    const config = context.active().getValue(configSymbol) as ResolvedTraceConfig;
+    return config;
 }
