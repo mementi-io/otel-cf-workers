@@ -1,5 +1,5 @@
 {
-  "name": "@mementi/otel-cf-workers",
+  "name": "@mementi-io/otel-cf-workers",
   "version": "1.0.1-rc.1",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",

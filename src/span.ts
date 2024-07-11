@@ -99,7 +99,7 @@ export class SpanImpl implements Span, ReadableSpan {
     readonly events: TimedEvent[] = [];
     readonly links: Link[];
     readonly resource: IResource;
-    instrumentationLibrary: InstrumentationLibrary = { name: '@mementi/otel-cf-workers' };
+    instrumentationLibrary: InstrumentationLibrary = { name: '@mementi-io/otel-cf-workers' };
     private _ended: boolean = false;
     private _droppedAttributesCount: number = 0;
     private _droppedEventsCount: number = 0;
