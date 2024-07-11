@@ -5,6 +5,7 @@ import { ExportResult, ExportResultCode } from '@opentelemetry/core'
 
 export class MultiSpanExporter implements SpanExporter {
 	private exporters: Array<SpanExporter>
+
 	constructor(exporters: Array<SpanExporter>) {
 		this.exporters = exporters
 	}
@@ -26,6 +27,7 @@ export class MultiSpanExporter implements SpanExporter {
 
 export class MultiSpanExporterAsync implements SpanExporter {
 	private exporters: Array<SpanExporter>
+
 	constructor(exporters: Array<SpanExporter>) {
 		this.exporters = exporters
 	}

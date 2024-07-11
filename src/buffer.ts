@@ -1,4 +1,4 @@
-//@ts-ignore
+// @ts-ignore
 import { Buffer } from 'node:buffer'
-//@ts-ignore
+// @ts-ignore
 globalThis.Buffer = Buffer

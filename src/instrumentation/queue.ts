@@ -1,10 +1,10 @@
-import { trace, SpanOptions, SpanKind, Attributes, Exception, context as api_context } from '@opentelemetry/api'
-import { SemanticAttributes } from '@opentelemetry/semantic-conventions'
+import { Attributes, context as api_context, Exception, SpanKind, SpanOptions, trace } from '@opentelemetry/api'
 import { Initialiser, setConfig } from '../config.js'
 import { exportSpans, proxyExecutionContext } from './common.js'
 import { instrumentEnv } from './env.js'
 import { unwrap, wrap } from '../wrap.js'
 import { versionAttributes } from './version.js'
+import { SEMATTRS_FAAS_TRIGGER } from '@opentelemetry/semantic-conventions'
 
 type QueueHandler = ExportedHandlerQueueHandler<unknown, unknown>
 export type QueueHandlerArgs = Parameters<QueueHandler>
@@ -15,6 +15,7 @@ class MessageStatusCount {
 	succeeded = 0
 	failed = 0
 	readonly total: number
+
 	constructor(total: number) {
 		this.total = total
 	}
@@ -64,7 +65,7 @@ const proxyQueueMessage = <Q>(msg: Message<Q>, count: MessageStatusCount): Messa
 						addEvent('messageAck', msg)
 						count.ack()
 
-						//TODO: handle errors
+						// TODO: handle errors
 						Reflect.apply(fnTarget, msg, [])
 					},
 				})
@@ -74,7 +75,7 @@ const proxyQueueMessage = <Q>(msg: Message<Q>, count: MessageStatusCount): Messa
 					apply: (fnTarget) => {
 						addEvent('messageRetry', msg)
 						count.retry()
-						//TODO: handle errors
+						// TODO: handle errors
 						const result = Reflect.apply(fnTarget, msg, [])
 						return result
 					},
@@ -109,7 +110,7 @@ const proxyMessageBatch = (batch: MessageBatch, count: MessageStatusCount) => {
 					apply: (fnTarget) => {
 						addEvent('ackAll')
 						count.ackRemaining()
-						//TODO: handle errors
+						// TODO: handle errors
 						Reflect.apply(fnTarget, batch, [])
 					},
 				})
@@ -119,7 +120,7 @@ const proxyMessageBatch = (batch: MessageBatch, count: MessageStatusCount) => {
 					apply: (fnTarget) => {
 						addEvent('retryAll')
 						count.retryRemaining()
-						//TODO: handle errors
+						// TODO: handle errors
 						Reflect.apply(fnTarget, batch, [])
 					},
 				})
@@ -137,7 +138,7 @@ export function executeQueueHandler(queueFn: QueueHandler, [batch, env, ctx]: Qu
 	const tracer = trace.getTracer('queueHandler')
 	const options: SpanOptions = {
 		attributes: {
-			[SemanticAttributes.FAAS_TRIGGER]: 'pubsub',
+			[SEMATTRS_FAAS_TRIGGER]: 'pubsub',
 			'queue.name': batch.queue,
 		},
 		kind: SpanKind.CONSUMER,

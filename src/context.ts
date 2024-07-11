@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import { ContextManager, Context, ROOT_CONTEXT } from '@opentelemetry/api'
-//@ts-ignore
+import { Context, ContextManager, ROOT_CONTEXT } from '@opentelemetry/api'
+// @ts-ignore
 import { AsyncLocalStorage } from 'node:async_hooks'
-//@ts-ignore
+// @ts-ignore
 import { EventEmitter } from 'node:events'
 
 type Func<T> = (...args: unknown[]) => T
@@ -211,6 +211,7 @@ abstract class AbstractAsyncHooksContextManager implements ContextManager {
 		;(ee as any)[this._kOtListeners] = map
 		return map
 	}
+
 	private _getPatchMap(ee: EventEmitter): PatchMap | undefined {
 		return (ee as never)[this._kOtListeners]
 	}

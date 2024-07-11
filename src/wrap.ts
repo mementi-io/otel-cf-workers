@@ -14,6 +14,7 @@ export function wrap<T extends object>(item: T, handler: ProxyHandler<T>, autoPa
 	if (isWrapped(item) || !isProxyable(item)) {
 		return item
 	}
+
 	const proxyHandler = Object.assign({}, handler)
 	proxyHandler.get = (target, prop, receiver) => {
 		if (prop === unwrapSymbol) {

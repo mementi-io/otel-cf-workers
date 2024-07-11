@@ -17,6 +17,7 @@ const defaultHeaders: Record<string, string> = {
 export class OTLPExporter implements SpanExporter {
 	private headers: Record<string, string>
 	private url: string
+
 	constructor(config: OTLPExporterConfig) {
 		this.url = config.url
 		this.headers = Object.assign({}, defaultHeaders, config.headers)
@@ -43,7 +44,7 @@ export class OTLPExporter implements SpanExporter {
 	}
 
 	send(items: any[], onSuccess: () => void, onError: (error: OTLPExporterError) => void): void {
-		const exportMessage = createExportTraceServiceRequest(items, true)
+		const exportMessage = createExportTraceServiceRequest(items, { useHex: true, useLongBits: false })
 		const body = JSON.stringify(exportMessage)
 		const params: RequestInit = {
 			method: 'POST',

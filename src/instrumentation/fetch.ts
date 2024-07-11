@@ -1,15 +1,15 @@
 import {
-	trace,
-	SpanOptions,
-	SpanKind,
-	propagation,
-	context as api_context,
 	Attributes,
-	Exception,
+	context as api_context,
 	Context,
+	Exception,
+	propagation,
+	SpanKind,
+	SpanOptions,
 	SpanStatusCode,
+	trace,
 } from '@opentelemetry/api'
-import { Initialiser, getActiveConfig, setConfig } from '../config.js'
+import { getActiveConfig, Initialiser, setConfig } from '../config.js'
 import { wrap } from '../wrap.js'
 import { instrumentEnv } from './env.js'
 import { exportSpans, proxyExecutionContext } from './common.js'
@@ -18,11 +18,13 @@ import { ReadableSpan } from '@opentelemetry/sdk-trace-base'
 import { versionAttributes } from './version.js'
 
 export type IncludeTraceContextFn = (request: Request) => boolean
+
 export interface FetcherConfig {
 	includeTraceContext?: boolean | IncludeTraceContextFn
 }
 
 export type AcceptTraceContextFn = (request: Request) => boolean
+
 export interface FetchHandlerConfig {
 	/**
 	 * Whether to enable context propagation for incoming requests to `fetch`.
@@ -129,6 +131,7 @@ export function waitUntilTrace(fn: () => Promise<any>): Promise<void> {
 }
 
 let cold_start = true
+
 export function executeFetchHandler(fetchFn: FetchHandler, [request, env, ctx]: FetchHandlerArgs): Promise<Response> {
 	const spanContext = getParentContextFromRequest(request)
 
@@ -195,6 +198,7 @@ export function createFetchHandler(fetchFn: FetchHandler, initialiser: Initialis
 }
 
 type getFetchConfig = (config: ResolvedTraceConfig) => FetcherConfig
+
 export function instrumentClientFetch(
 	fetchFn: Fetcher['fetch'],
 	configFn: getFetchConfig,

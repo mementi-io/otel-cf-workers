@@ -71,7 +71,7 @@ function _instrumentGlobalCache() {
 			}
 		},
 	}
-	//@ts-ignore
+	// @ts-ignore
 	globalThis.caches = wrap(caches, handler)
 }
 

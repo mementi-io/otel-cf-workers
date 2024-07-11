@@ -1,16 +1,16 @@
 import {
-	Tracer,
-	TraceFlags,
+	Context,
+	context as api_context,
 	Span,
 	SpanKind,
 	SpanOptions,
-	Context,
-	context as api_context,
 	trace,
+	TraceFlags,
+	Tracer,
 } from '@opentelemetry/api'
 import { sanitizeAttributes } from '@opentelemetry/core'
 import { Resource } from '@opentelemetry/resources'
-import { SpanProcessor, RandomIdGenerator, ReadableSpan, SamplingDecision } from '@opentelemetry/sdk-trace-base'
+import { RandomIdGenerator, ReadableSpan, SamplingDecision, SpanProcessor } from '@opentelemetry/sdk-trace-base'
 
 import { SpanImpl } from './span.js'
 import { getActiveConfig } from './config.js'
@@ -19,6 +19,7 @@ export class WorkerTracer implements Tracer {
 	private readonly _spanProcessors: SpanProcessor[]
 	private readonly resource: Resource
 	private readonly idGenerator: RandomIdGenerator = new RandomIdGenerator()
+
 	constructor(spanProcessors: SpanProcessor[], resource: Resource) {
 		this._spanProcessors = spanProcessors
 		this.resource = resource
@@ -69,8 +70,8 @@ export class WorkerTracer implements Tracer {
 			startTime: options.startTime,
 		})
 		this.spanProcessors.forEach((sp) => {
-			//Do not get me started on the idosyncracies of the Otel JS libraries.
-			//@ts-ignore
+			// Do not get me started on the idosyncracies of the Otel JS libraries.
+			// @ts-ignore
 			sp.onStart(span, context)
 		})
 		return span

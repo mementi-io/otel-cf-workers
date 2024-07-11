@@ -1,4 +1,4 @@
-import { TraceFlags, SpanStatusCode } from '@opentelemetry/api'
+import { SpanStatusCode, TraceFlags } from '@opentelemetry/api'
 import { ReadableSpan } from '@opentelemetry/sdk-trace-base'
 
 export interface LocalTrace {

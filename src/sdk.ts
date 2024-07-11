@@ -16,12 +16,12 @@ import { WorkerTracerProvider } from './provider.js'
 import { isHeadSampled, isRootErrorSpan, multiTailSampler } from './sampling.js'
 import { BatchTraceSpanProcessor } from './spanprocessor.js'
 import {
-	Trigger,
-	TraceConfig,
-	ResolvedTraceConfig,
 	ExporterConfig,
-	ParentRatioSamplingConfig,
 	isSpanProcessorConfig,
+	ParentRatioSamplingConfig,
+	ResolvedTraceConfig,
+	TraceConfig,
+	Trigger,
 } from './types.js'
 import { unwrap } from './wrap.js'
 import { createFetchHandler, instrumentGlobalFetch } from './instrumentation/fetch.js'
@@ -57,14 +57,10 @@ const createResource = (config: ResolvedTraceConfig): Resource => {
 		'cloud.region': 'earth',
 		'faas.max_memory': 134217728,
 		'telemetry.sdk.language': 'js',
-		'telemetry.sdk.name': '@microlabs/otel-cf-workers',
+		'telemetry.sdk.name': '@mementi-io/otel-cf-workers',
 		'telemetry.sdk.version': '1.0.0-rc.X',
 	}
-	const serviceResource = new Resource({
-		'service.name': config.service.name,
-		'service.namespace': config.service.namespace,
-		'service.version': config.service.version,
-	})
+	const serviceResource = new Resource(config.resource)
 	const resource = new Resource(workerResourceAttrs)
 	return resource.merge(serviceResource)
 }
@@ -74,6 +70,7 @@ function isSpanExporter(exporterConfig: ExporterConfig): exporterConfig is SpanE
 }
 
 let initialised = false
+
 function init(config: ResolvedTraceConfig): void {
 	if (!initialised) {
 		if (config.instrumentation.instrumentGlobalCache) {
@@ -116,7 +113,9 @@ function parseConfig(supplied: TraceConfig): ResolvedTraceConfig {
 				? headSampleConf
 				: createSampler(headSampleConf)
 			: new AlwaysOnSampler()
-		const spanProcessors = Array.isArray(supplied.spanProcessors) ? supplied.spanProcessors : [supplied.spanProcessors]
+		const spanProcessors = Array.isArray(supplied.spanProcessors)
+			? supplied.spanProcessors
+			: [supplied.spanProcessors]
 		if (spanProcessors.length === 0) {
 			console.log(
 				'Warning! You must either specify an exporter or your own SpanProcessor(s)/Exporter combination in the open-telemetry configuration.',
@@ -136,7 +135,7 @@ function parseConfig(supplied: TraceConfig): ResolvedTraceConfig {
 				headSampler,
 				tailSampler: supplied.sampling?.tailSampler || multiTailSampler([isHeadSampled, isRootErrorSpan]),
 			},
-			service: supplied.service,
+			resource: supplied.resource,
 			spanProcessors,
 			propagator: supplied.propagator || new W3CTraceContextPropagator(),
 			instrumentation: {
