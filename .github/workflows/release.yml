@@ -32,6 +32,9 @@ jobs:
           registry-url: 'https://npm.pkg.github.com'
           scope: '@mementi'
 
+      - name: 'Install NPM Dependencies'
+        run: 'pnpm install --frozen-lockfile'
+
       - name: Check the build
         run: pnpm build
 
