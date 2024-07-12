@@ -71,7 +71,7 @@ export function gatherRequestAttributes(request: Request): Attributes {
     attrs['client.address'] = headers.get('cf-connecting-ip') ?? '';
 
     for (const [ key, value ] of headers.entries()) {
-        attrs[`http.request.header.${key}`] = value.split(',') as string[];
+        attrs[`http.request.header.${key}`] = value.split(', ') as string[];
     }
 
     const u = new URL(request.url);
@@ -92,7 +92,7 @@ export function gatherResponseAttributes(response: Response): Attributes {
         attrs['http.response.body.size'] = response.headers.get('content-length') ?? 0;
     }
     for (const [ key, value ] of response.headers.entries()) {
-        attrs[`http.response.header.${key}`] = value.split(',') as string[];
+        attrs[`http.response.header.${key}`] = value.split(', ') as string[];
     }
 
     return attrs;
