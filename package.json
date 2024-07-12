@@ -1,6 +1,6 @@
 {
   "name": "@mementi-io/otel-cf-workers",
-  "version": "1.0.1-rc.1",
+  "version": "1.1.0",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
   "types": "dist/esm/index.d.ts",
@@ -30,6 +30,7 @@
     "build-esm": "tsc",
     "build-cjs": "tsc -p tsconfig-cjs.json",
     "fix-dist": "echo '{\"type\": \"module\"}' > dist/esm/package.json && echo '{\"type\": \"commonjs\"}' > dist/cjs/package.json",
+    "prebuild": "node -p \"'export const LIB_VERSION = ' + JSON.stringify(require('./package.json').version).replaceAll('\\\"', \\\"'\\\") + ';'\" > src/version.ts",
     "build": "run-s -l clean build-esm build-cjs fix-dist",
     "release": "pnpm run build && changeset publish",
     "preversion": "run-s -l check:* build",

@@ -9,7 +9,6 @@ import {
     SpanExporter,
     TraceIdRatioBasedSampler,
 } from '@opentelemetry/sdk-trace-base';
-
 import { Initialiser } from './config.js';
 import { OTLPExporter } from './exporter.js';
 import { WorkerTracerProvider } from './provider.js';
@@ -29,7 +28,7 @@ import { instrumentGlobalCache } from './instrumentation/cache.js';
 import { createQueueHandler } from './instrumentation/queue.js';
 import { DOClass, instrumentDOClass } from './instrumentation/do.js';
 import { createScheduledHandler } from './instrumentation/scheduled.js';
-// import { name, version } from '../package.json'
+import { LIB_VERSION } from './version';
 
 type FetchHandler = ExportedHandlerFetchHandler<unknown, unknown>;
 type ScheduledHandler = ExportedHandlerScheduledHandler<unknown>;
@@ -58,7 +57,7 @@ const createResource = (config: ResolvedTraceConfig): Resource => {
         'faas.max_memory': 134217728,
         'telemetry.sdk.language': 'js',
         'telemetry.sdk.name': '@mementi-io/otel-cf-workers',
-        'telemetry.sdk.version': '1.0.1-rc.X',
+        'telemetry.sdk.version': LIB_VERSION,
     };
     const serviceResource = new Resource(config.resource);
     const resource = new Resource(workerResourceAttrs);

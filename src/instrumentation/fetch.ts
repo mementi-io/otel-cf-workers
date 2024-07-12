@@ -60,15 +60,19 @@ const gatherOutgoingCfAttributes = (cf: RequestInitCfProperties): Attributes => 
 };
 
 export function gatherRequestAttributes(request: Request): Attributes {
-    const attrs: Record<string, string | number> = {};
+    const attrs: Record<string, string | number | string[]> = {};
     const headers = request.headers;
     attrs['http.request.method'] = request.method.toUpperCase();
     attrs['network.protocol.name'] = 'http';
-    attrs['network.protocol.version'] = request.cf?.httpProtocol as string;
-    attrs['http.request.body.size'] = headers.get('content-length')!;
-    attrs['user_agent.original'] = headers.get('user-agent')!;
-    attrs['http.mime_type'] = headers.get('content-type')!;
-    attrs['http.accepts'] = request.cf?.clientAcceptEncoding as string;
+    attrs['network.protocol.version'] = (request.cf?.httpProtocol as string)?.split('/')[1] ?? '';
+    attrs['http.request.body.size'] = headers.get('content-length') ?? 0;
+    attrs['http.request.body.type'] = headers.get('content-type') ?? '';
+    attrs['user_agent.original'] = headers.get('user-agent') ?? '';
+    attrs['client.address'] = headers.get('cf-connecting-ip') ?? '';
+
+    for (const [ key, value ] of headers.entries()) {
+        attrs[`http.request.header.${key}`] = value.split(',') as string[];
+    }
 
     const u = new URL(request.url);
     attrs['url.full'] = `${u.protocol}//${u.host}${u.pathname}${u.search}`;
@@ -81,12 +85,16 @@ export function gatherRequestAttributes(request: Request): Attributes {
 }
 
 export function gatherResponseAttributes(response: Response): Attributes {
-    const attrs: Record<string, string | number> = {};
+    const attrs: Record<string, string | number | string[]> = {};
     attrs['http.response.status_code'] = response.status;
+    attrs['http.request.body.type'] = response.headers.get('content-type') ?? '';
     if (response.headers.get('content-length')! == null) {
-        attrs['http.response.body.size'] = response.headers.get('content-length')!;
+        attrs['http.response.body.size'] = response.headers.get('content-length') ?? 0;
     }
-    attrs['http.mime_type'] = response.headers.get('content-type')!;
+    for (const [ key, value ] of response.headers.entries()) {
+        attrs[`http.response.header.${key}`] = value.split(',') as string[];
+    }
+
     return attrs;
 }
 
