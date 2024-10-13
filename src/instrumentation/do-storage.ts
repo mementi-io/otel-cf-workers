@@ -1,13 +1,18 @@
 import { Attributes, SpanKind, SpanOptions, trace } from '@opentelemetry/api'
-import { SemanticAttributes } from '@opentelemetry/semantic-conventions'
 import { wrap } from '../wrap.js'
 import { Overloads } from './common.js'
+import {
+	ATTR_DB_OPERATION_NAME,
+	ATTR_DB_QUERY_TEXT,
+	ATTR_DB_SYSTEM,
+} from '@opentelemetry/semantic-conventions/incubating'
 
 type ExtraAttributeFn = (argArray: any[], result: any) => Attributes
 
 const dbSystem = 'Cloudflare DO'
 
 type DurableObjectCommonOptions = Pick<DurableObjectPutOptions, 'allowConcurrency' | 'allowUnconfirmed' | 'noCache'>
+
 function isDurableObjectCommonOptions(options: any): options is DurableObjectCommonOptions {
 	return (
 		typeof options === 'object' &&
@@ -165,9 +170,9 @@ function instrumentStorageFn(fn: Function, operation: string) {
 	const fnHandler: ProxyHandler<any> = {
 		apply: (target, thisArg, argArray) => {
 			const attributes = {
-				[SemanticAttributes.DB_SYSTEM]: dbSystem,
-				[SemanticAttributes.DB_OPERATION]: operation,
-				[SemanticAttributes.DB_STATEMENT]: `${operation} ${argArray[0]}`,
+				[ATTR_DB_SYSTEM]: dbSystem,
+				[ATTR_DB_OPERATION_NAME]: operation,
+				[ATTR_DB_QUERY_TEXT]: `${operation} ${argArray[0]}`,
 			}
 			const options: SpanOptions = {
 				kind: SpanKind.CLIENT,

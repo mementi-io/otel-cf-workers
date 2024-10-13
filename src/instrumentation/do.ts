@@ -1,11 +1,10 @@
-import { context as api_context, trace, SpanOptions, SpanKind, Exception, SpanStatusCode } from '@opentelemetry/api'
-import { SemanticAttributes } from '@opentelemetry/semantic-conventions'
+import { context as api_context, Exception, SpanKind, SpanOptions, SpanStatusCode, trace } from '@opentelemetry/api'
 import { passthroughGet, unwrap, wrap } from '../wrap.js'
 import {
-	getParentContextFromHeaders,
 	gatherIncomingCfAttributes,
 	gatherRequestAttributes,
 	gatherResponseAttributes,
+	getParentContextFromHeaders,
 	instrumentClientFetch,
 } from './fetch.js'
 import { instrumentEnv } from './env.js'
@@ -13,6 +12,7 @@ import { Initialiser, setConfig } from '../config.js'
 import { exportSpans } from './common.js'
 import { instrumentStorage } from './do-storage.js'
 import { DOConstructorTrigger } from '../types.js'
+import { ATTR_FAAS_COLDSTART, ATTR_FAAS_TRIGGER } from '@opentelemetry/semantic-conventions/incubating'
 
 type FetchFn = DurableObject['fetch']
 type AlarmFn = DurableObject['alarm']
@@ -80,13 +80,14 @@ export function instrumentState(state: DurableObjectState) {
 
 let cold_start = true
 export type DOClass = { new (state: DurableObjectState, env: any): DurableObject }
+
 export function executeDOFetch(fetchFn: FetchFn, request: Request, id: DurableObjectId): Promise<Response> {
 	const spanContext = getParentContextFromHeaders(request.headers)
 
 	const tracer = trace.getTracer('DO fetchHandler')
 	const attributes = {
-		[SemanticAttributes.FAAS_TRIGGER]: 'http',
-		[SemanticAttributes.FAAS_COLDSTART]: cold_start,
+		[ATTR_FAAS_TRIGGER]: 'http',
+		[ATTR_FAAS_COLDSTART]: cold_start,
 	}
 	cold_start = false
 	Object.assign(attributes, gatherRequestAttributes(request))
@@ -122,7 +123,7 @@ export function executeDOAlarm(alarmFn: NonNullable<AlarmFn>, id: DurableObjectI
 
 	const name = id.name || ''
 	const promise = tracer.startActiveSpan(`Durable Object Alarm ${name}`, async (span) => {
-		span.setAttribute(SemanticAttributes.FAAS_COLDSTART, cold_start)
+		span.setAttribute(ATTR_FAAS_COLDSTART, cold_start)
 		cold_start = false
 		span.setAttribute('do.id', id.toString())
 		if (id.name) span.setAttribute('do.name', id.name)
