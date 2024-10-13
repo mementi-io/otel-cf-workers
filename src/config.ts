@@ -11,7 +11,7 @@ import { W3CTraceContextPropagator } from '@opentelemetry/core'
 import { AlwaysOnSampler, ReadableSpan, Sampler, SpanExporter } from '@opentelemetry/sdk-trace-base'
 
 import { OTLPExporter } from './exporter.js'
-import { multiTailSampler, isHeadSampled, isRootErrorSpan, createSampler } from './sampling.js'
+import { createSampler, isHeadSampled, isRootErrorSpan, multiTailSampler } from './sampling.js'
 import { BatchTraceSpanProcessor } from './spanprocessor.js'
 
 const configSymbol = Symbol('Otel Workers Tracing Configuration')
@@ -63,7 +63,7 @@ export function parseConfig(supplied: TraceConfig): ResolvedTraceConfig {
 				headSampler,
 				tailSampler: supplied.sampling?.tailSampler || multiTailSampler([isHeadSampled, isRootErrorSpan]),
 			},
-			service: supplied.service,
+			resource: supplied.resource,
 			spanProcessors,
 			propagator: supplied.propagator || new W3CTraceContextPropagator(),
 			instrumentation: {

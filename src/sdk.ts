@@ -3,7 +3,7 @@ import { Resource } from '@opentelemetry/resources'
 
 import { Initialiser, parseConfig } from './config.js'
 import { WorkerTracerProvider } from './provider.js'
-import { Trigger, TraceConfig, ResolvedTraceConfig } from './types.js'
+import { ResolvedTraceConfig, TraceConfig, Trigger } from './types.js'
 import { unwrap } from './wrap.js'
 import { createFetchHandler, instrumentGlobalFetch } from './instrumentation/fetch.js'
 import { instrumentGlobalCache } from './instrumentation/cache.js'
@@ -38,21 +38,18 @@ const createResource = (config: ResolvedTraceConfig): Resource => {
 		'cloud.platform': 'cloudflare.workers',
 		'cloud.region': 'earth',
 		'faas.max_memory': 134217728,
-		'telemetry.sdk.language': 'js',
-		'telemetry.sdk.name': '@microlabs/otel-cf-workers',
-		'telemetry.sdk.version': versions['@microlabs/otel-cf-workers'],
+		'telemetry.sdk.language': 'nodejs',
+		'telemetry.sdk.name': '@mementi-io/otel-cf-workers',
+		'telemetry.sdk.version': versions['@mementi-io/otel-cf-workers'],
 		'telemetry.sdk.build.node_version': versions['node'],
 	}
-	const serviceResource = new Resource({
-		'service.name': config.service.name,
-		'service.namespace': config.service.namespace,
-		'service.version': config.service.version,
-	})
+	const serviceResource = new Resource(config.resource)
 	const resource = new Resource(workerResourceAttrs)
 	return resource.merge(serviceResource)
 }
 
 let initialised = false
+
 function init(config: ResolvedTraceConfig): void {
 	if (!initialised) {
 		if (config.instrumentation.instrumentGlobalCache) {
