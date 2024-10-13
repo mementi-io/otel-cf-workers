@@ -1,15 +1,15 @@
 import {
-	SpanContext,
-	Link,
-	SpanKind,
-	TimeInput,
-	Exception,
 	Attributes,
+	AttributeValue,
+	Exception,
 	HrTime,
+	Link,
 	Span,
+	SpanContext,
+	SpanKind,
 	SpanStatus,
 	SpanStatusCode,
-	AttributeValue,
+	TimeInput,
 } from '@opentelemetry/api'
 import {
 	hrTimeDuration,
@@ -94,7 +94,7 @@ export class SpanImpl implements Span, ReadableSpan {
 	readonly events: TimedEvent[] = []
 	readonly links: Link[]
 	readonly resource: IResource
-	instrumentationLibrary: InstrumentationLibrary = { name: '@microlabs/otel-cf-workers' }
+	instrumentationLibrary: InstrumentationLibrary = { name: '@mementi-io/otel-cf-workers' }
 	private _ended: boolean = false
 	private _droppedAttributesCount: number = 0
 	private _droppedEventsCount: number = 0
@@ -116,6 +116,7 @@ export class SpanImpl implements Span, ReadableSpan {
 		this.links.push(link)
 		return this
 	}
+
 	addLinks(links: Link[]): this {
 		this.links.push(...links)
 		return this
